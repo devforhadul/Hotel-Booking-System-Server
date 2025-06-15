@@ -30,6 +30,7 @@ async function run() {
 
     const myDB = client.db('Modern_Hotel_booking');
     const roomsDataColl = myDB.collection('roomsData');
+    const hotelBookedDataColl = myDB.collection('hotelBookedData');
 
     //===================================================
 
@@ -41,11 +42,24 @@ async function run() {
 
     app.get('/rooms/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await roomsDataColl.findOne(query);
       res.send(result);
     });
 
+    // Room booking API
+    app.post('/rooms', async (req, res) => {
+      const newRoom = req.body;
+      console.log(newRoom)
+      const result = await hotelBookedDataColl.insertOne(newRoom);
+      res.send(result);
+    });
+
+    app.get('/rooms/booked', async (req, res) => {
+      const query = {};
+      const result = await hotelBookedDataColl.find(query).toArray();
+      res.send(result);
+    });
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {

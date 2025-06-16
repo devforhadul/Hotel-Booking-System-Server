@@ -42,6 +42,10 @@ async function run() {
 
     app.get('/rooms/:id', async (req, res) => {
       const id = req.params.id;
+      // Check if the id is valid before creating ObjectId
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid ID format' });
+      }
       const query = { _id: new ObjectId(id) };
       const result = await roomsDataColl.findOne(query);
       res.send(result);
@@ -59,6 +63,18 @@ async function run() {
       const query = {};
       const result = await hotelBookedDataColl.find(query).toArray();
       res.send(result);
+    });
+
+    // Room sort by top rating
+    app.get('/top-rated', async (req, res) => {
+      try {
+        const result = await roomsDataColl.find({})
+          .sort({ rating: -1 }).limit(6).toArray();
+        res.send(result);
+      } catch (error) {
+        console.error('❌ Error fetching top-rated rooms:', error);
+        res.send({ error: 'Failed to fetch top-rated rooms' });
+      }
     });
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

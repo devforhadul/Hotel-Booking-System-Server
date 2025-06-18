@@ -5,6 +5,7 @@ const cors = require('cors');
 const port = 3000;
 require('dotenv').config();
 
+
 // middleware
 app.use(cors());
 app.use(express.json());
@@ -14,8 +15,6 @@ app.use(express.json());
 
 
 const uri = `mongodb+srv://${process.env.mongoDB_user}:${process.env.mongoDB_pass}@cluster0.wcol5mf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-
-
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -40,6 +39,7 @@ async function run() {
       res.send(result);
     });
 
+    // get sigle room by id
     app.get('/rooms/:id', async (req, res) => {
       const id = req.params.id;
       // Check if the id is valid before creating ObjectId
@@ -51,10 +51,9 @@ async function run() {
       res.send(result);
     });
 
-    // Room booking API
+    // Room booking post
     app.post('/rooms', async (req, res) => {
       const newRoom = req.body;
-      console.log(newRoom)
       const result = await hotelBookedDataColl.insertOne(newRoom);
       res.send(result);
     });
@@ -93,16 +92,14 @@ async function run() {
     // Delete roommate post
     app.delete('/booked/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id)
       const result = await hotelBookedDataColl.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
     //update booked date
-    app.put('/booked/update/:id', async (req, res) => {
+    app.patch('/booked/update/:id', async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
-      console.log(updatedData)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
@@ -113,6 +110,38 @@ async function run() {
       };
       const result = await hotelBookedDataColl.updateOne(filter, updateDoc, options);
       res.send(result);
+    });
+
+    //update availiblity after booking room
+    app.patch('/rooms/booked/:id', async (req, ress) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      console.log(id, updatedData)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: false };
+      const updateDoc = {
+        $set: {
+          isAvailable: updatedData.isAvailable,
+        },
+      };
+      const result = await roomsDataColl.updateOne(filter, updateDoc, options);
+      ress.send(result);
+    });
+
+    //update availiblity after booking room
+    app.patch('/rooms/cancel/:id', async (req, ress) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      console.log(id, updatedData)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: false };
+      const updateDoc = {
+        $set: {
+          isAvailable: updatedData.isAvailable,
+        },
+      };
+      const result = await roomsDataColl.updateOne(filter, updateDoc, options);
+      ress.send(result);
     });
 
     // add review 
@@ -144,7 +173,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Hotel Booking Server is running')
 })
 
 app.listen(port, () => {

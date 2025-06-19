@@ -2,8 +2,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 const app = express()
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
 const port = 3000;
 require('dotenv').config();
+
 
 
 // middleware
@@ -14,9 +16,8 @@ app.use(express.json());
 
 
 
-const uri = `mongodb+srv://${process.env.mongoDB_user}:${process.env.mongoDB_pass}@cluster0.wcol5mf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
+const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -32,6 +33,13 @@ async function run() {
     const hotelBookedDataColl = myDB.collection('hotelBookedData');
 
     //===================================================
+
+    // Genenrate jwt
+    app.post('/jwt', (req, res) => {
+      const user = { email: req.body.email };
+      const token = jwt.sign(user,process.env.JWT_SECRET, {expiresIn: '7d'})
+      res.send({token, message: 'jwt created successfully'})
+    });
 
     app.get('/rooms', async (req, res) => {
       const query = {};
@@ -162,7 +170,7 @@ async function run() {
 
 
 
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();

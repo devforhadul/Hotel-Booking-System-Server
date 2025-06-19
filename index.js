@@ -177,24 +177,24 @@ async function run() {
     });
 
     //Rooms filter by price
-    app.get('/filter', async (req, res) => {
-      console.log("minPrice:", req.query.minPrice); // Debug log
-      console.log("maxPrice:", req.query.maxPrice);
+    // app.get('/filter', async (req, res) => {
+    //   console.log("minPrice:", req.query.minPrice); // Debug log
+    //   console.log("maxPrice:", req.query.maxPrice);
 
-      try {
-        const minPrice = parseInt(req.query.minPrice) || 0;
-        const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+    //   try {
+    //     const minPrice = parseInt(req.query.minPrice) || 0;
+    //     const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
 
-        const result = await roomsDataColl
-          .find({ pricePerNight: { $gte: minPrice, $lte: maxPrice } })
-          .toArray();
+    //     const result = await roomsDataColl
+    //       .find({ pricePerNight: { $gte: minPrice, $lte: maxPrice } })
+    //       .toArray();
 
-        res.send(result);
-      } catch (error) {
-        console.error("Filter Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
-    });
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Filter Error:", error);
+    //     res.status(500).json({ error: "Internal Server Error" });
+    //   }
+    // });
 
 
 
@@ -205,7 +205,7 @@ async function run() {
 
     console.log("You successfully connected to MongoDB!");
   } finally {
-    // Ensures that the client will close when you finish/error
+    
     // await client.close();
   }
 }

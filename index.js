@@ -176,26 +176,7 @@ async function run() {
       res.send(result);
     });
 
-    //Rooms filter by price
-    // app.get('/filter', async (req, res) => {
-    //   console.log("minPrice:", req.query.minPrice); // Debug log
-    //   console.log("maxPrice:", req.query.maxPrice);
-
-    //   try {
-    //     const minPrice = parseInt(req.query.minPrice) || 0;
-    //     const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
-
-    //     const result = await roomsDataColl
-    //       .find({ pricePerNight: { $gte: minPrice, $lte: maxPrice } })
-    //       .toArray();
-
-    //     res.send(result);
-    //   } catch (error) {
-    //     console.error("Filter Error:", error);
-    //     res.status(500).json({ error: "Internal Server Error" });
-    //   }
-    // });
-
+    
 
 
 
@@ -214,7 +195,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Hotel Booking Server is running')
+  res.send('Hotel Booking Server is running now...')
 })
 
 app.listen(port, () => {

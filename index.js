@@ -37,8 +37,8 @@ async function run() {
     // Genenrate jwt
     app.post('/jwt', (req, res) => {
       const user = { email: req.body.email };
-      const token = jwt.sign(user,process.env.JWT_SECRET, {expiresIn: '7d'})
-      res.send({token, message: 'jwt created successfully'})
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '7d' })
+      res.send({ token, message: 'jwt created successfully' })
     });
 
     app.get('/rooms', async (req, res) => {
@@ -75,6 +75,19 @@ async function run() {
 
     // get booked room by emamil id
     app.get('/booked', async (req, res) => {
+      const token = req?.headers?.authorization?.split(' ')[1]
+      if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
+          if (err) {
+            console.log(err)
+          }
+          console.log(decode)
+        });
+      }
+      if (!token) {
+        return res.send({ message: "Ka toi vai?" })
+      }
+
       const email = req.query.email;
       const query = {
         userEmail: email
@@ -161,6 +174,26 @@ async function run() {
         { $push: { reviews: reviewData } }
       );
       res.send(result);
+    });
+
+    //Rooms filter by price
+    app.get('/filter', async (req, res) => {
+      console.log("minPrice:", req.query.minPrice); // Debug log
+      console.log("maxPrice:", req.query.maxPrice);
+
+      try {
+        const minPrice = parseInt(req.query.minPrice) || 0;
+        const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+
+        const result = await roomsDataColl
+          .find({ pricePerNight: { $gte: minPrice, $lte: maxPrice } })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error("Filter Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
     });
 
 

@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors');
 var jwt = require('jsonwebtoken');
+const { default: axios } = require('axios');
 const port = 3000;
 require('dotenv').config();
 
@@ -63,6 +64,13 @@ async function run() {
     app.post('/rooms', async (req, res) => {
       const newRoom = req.body;
       const result = await hotelBookedDataColl.insertOne(newRoom);
+      const filter = { _id: new ObjectId(newRoom?.roomId) };
+      const updateDoc = {
+        $set: {
+          isAvailable: newRoom?.isAvailable,
+        },
+      };
+      const updateRoomStatus = await roomsDataColl.updateOne(filter, updateDoc);
       res.send(result);
     });
 
@@ -133,21 +141,6 @@ async function run() {
       res.send(result);
     });
 
-    //update availiblity after booking room
-    app.patch('/rooms/booked/:id', async (req, ress) => {
-      const id = req.params.id;
-      const updatedData = req.body;
-      console.log(id, updatedData)
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: false };
-      const updateDoc = {
-        $set: {
-          isAvailable: updatedData.isAvailable,
-        },
-      };
-      const result = await roomsDataColl.updateOne(filter, updateDoc, options);
-      ress.send(result);
-    });
 
     //update availiblity after booking room
     app.patch('/rooms/cancel/:id', async (req, ress) => {
@@ -176,9 +169,52 @@ async function run() {
       res.send(result);
     });
 
-    
 
 
+    // GET /hotels?sort=asc
+    app.get("/hotels", async (req, res) => {
+      try {
+        const { sort } = req.query; // "asc" or "desc"
+
+        let sortOrder = {};
+        if (sort === "asc") {
+          sortOrder.price = 1; // Low to high
+        } else if (sort === "desc") {
+          sortOrder.price = -1; // High to low
+        }
+
+        const hotels = await db.collection("hotels")
+          .find({})
+          .sort(sortOrder)
+          .toArray();
+
+        res.json(hotels);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post('/send', async (req, res) => {
+      const { phone, message } = req.body;
+      try {
+        const SMS_API_KEY = process.env.SMS_API_KEY; // .env থেকে নাও
+        const url = `https://api.sms.net.bd/sendsms?api_key=${SMS_API_KEY}&msg=${encodeURIComponent(
+          message
+        )}&to=${phone}`;
+
+        const response = await axios.get(url);
+
+        res.json({
+          status: "success",
+          data: response.data
+        });
+
+        res.send(url)
+      } catch (err) {
+        res.status(500).json({ error: "SMS sending failed", err });
+      }
+    })
 
 
 
@@ -186,7 +222,7 @@ async function run() {
 
     console.log("You successfully connected to MongoDB!");
   } finally {
-    
+
     // await client.close();
   }
 }

@@ -195,13 +195,11 @@ async function run() {
       }
     });
 
-    app.post('/send', async (req, res) => {
+    app.post('/send-sms', async (req, res) => {
       const { phone, message } = req.body;
       try {
         const SMS_API_KEY = process.env.SMS_API_KEY; // .env থেকে নাও
-        const url = `https://api.sms.net.bd/sendsms?api_key=${SMS_API_KEY}&msg=${encodeURIComponent(
-          message
-        )}&to=${phone}`;
+        const url = `http://bulksmsbd.net/api/smsapi?api_key=${SMS_API_KEY}&type=text&number=${phone}&senderid=8809617631169&message=${message}`;
 
         const response = await axios.get(url);
 
